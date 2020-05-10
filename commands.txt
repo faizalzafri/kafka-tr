@@ -1,0 +1,66 @@
+In summary, for Windows
+Download and Setup Java 8 JDK
+
+Download the Kafka binaries from https://kafka.apache.org/downloads
+
+Extract Kafka at the root of C:\
+
+Setup Kafka bins in the Environment variables section by editing Path
+
+Try Kafka commands using kafka-topics.bat (for example)
+
+Edit Zookeeper & Kafka configs
+
+zookeeper.properties: dataDir=C:/kafka_2.12-2.0.0/data/zookeeper 
+
+server.properties: log.dirs=C:/kafka_2.12-2.0.0/data/kafka 
+
+Start Zookeeper in one command line: zookeeper-server-start.bat config\zookeeper.properties
+
+Start Kafka in another command line: kafka-server-start.bat config\server.properties
+
+-----------------------------------------------------------------------------------------------------------
+
+C:\kafka_2.12-2.0.0>zookeeper-server-start.bat config\zookeeper.properties
+
+C:\kafka_2.12-2.0.0>kafka-server-start.bat config\server.properties
+
+kafka-topics --zookeeper 127.0.0.1:2181 --topic first_topic --create --partitions 3 --replication-factor 1
+
+kafka-topics --zookeeper 127.0.0.1:2181 --list
+
+kafka-topics --zookeeper 127.0.0.1:2181 --topic first_topic --describe
+
+-----------------------------------------------------------------------------------------------------------
+
+kafka-console-producer --broker-list 127.0.0.1:9092 --topic first_topic
+
+kafka-console-producer --broker-list 127.0.0.1:9092 --topic first_topic --producer-property acks=all
+
+kafka-console-producer --broker-list 127.0.0.1:9092 --topic first_topic --property parse.key=true --property key.separator=,
+> key,value
+> another key,another value
+
+-----------------------------------------------------------------------------------------------------------
+
+kafka-console-consumer --bootstrap-server 127.0.0.1:9092 --topic first_topic
+
+kafka-console-consumer --bootstrap-server 127.0.0.1:9092 --topic first_topic --from-beginning
+
+kafka-console-consumer --bootstrap-server 127.0.0.1:9092 --topic first_topic --from-beginning --property print.key=true --property key.separator=,
+
+-----------------------------------------------------------------------------------------------------------
+
+kafka-console-consumer --bootstrap-server 127.0.0.1:9092 --topic first_topic --group my-first-app
+
+kafka-console-consumer --bootstrap-server 127.0.0.1:9092 --topic first_topic --group my-second-app
+
+-----------------------------------------------------------------------------------------------------------
+
+kafka-consumer-groups --bootstrap-server 127.0.0.1:9092 --describe --group my-second-app
+
+kafka-consumer-groups --bootstrap-server 127.0.0.1:9092 --group my-second-app --reset-offsets --to-earliest --execute --topic first_topic
+
+kafka-consumer-groups --bootstrap-server 127.0.0.1:9092 --group my-second-app --reset-offsets --shift-by -2 --execute --topic first_topic
+
+
