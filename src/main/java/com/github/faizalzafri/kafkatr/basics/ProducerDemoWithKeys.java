@@ -9,9 +9,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 
 public class ProducerDemoWithKeys {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
 
         Logger logger = LoggerFactory.getLogger(ProducerDemoWithKeys.class);
 
@@ -36,7 +37,7 @@ public class ProducerDemoWithKeys {
                 } else {
                     logger.info("Topic: {} Key: {} Partition: {} Offset: {} Timestamp: {}", recordMetadata.topic(), key, recordMetadata.partition(), recordMetadata.offset(), recordMetadata.timestamp());
                 }
-            });
+            }).get();
         }
         producer.flush();
     }
