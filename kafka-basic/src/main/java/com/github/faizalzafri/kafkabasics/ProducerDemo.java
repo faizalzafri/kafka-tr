@@ -1,4 +1,4 @@
-package basics;
+package com.github.faizalzafri.kafkabasics;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
