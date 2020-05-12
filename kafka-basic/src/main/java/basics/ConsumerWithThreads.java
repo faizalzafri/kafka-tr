@@ -1,4 +1,4 @@
-package com.github.faizalzafri.kafkatr.basics;
+package basics;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;

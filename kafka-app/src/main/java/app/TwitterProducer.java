@@ -1,4 +1,4 @@
-package com.github.faizalzafri.kafkatr.app;
+package app;
 
 import com.google.common.collect.Lists;
 import com.twitter.hbc.ClientBuilder;
