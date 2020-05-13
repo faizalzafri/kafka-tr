@@ -75,6 +75,8 @@ public class TwitterProducer {
                     public void onCompletion(RecordMetadata recordMetadata, Exception e) {
                         if (Objects.nonNull(e)) {
                             logger.error("Error while producing: {}", e);
+                        }else{
+                            logger.info("Topic: {} Partition: {} Offset: {} Timestamp: {}",recordMetadata.topic(),recordMetadata.partition(),recordMetadata.offset(),recordMetadata.timestamp());
                         }
                     }
                 });
@@ -89,7 +91,7 @@ public class TwitterProducer {
         /** Declare the host you want to connect to, the endpoint, and authentication (basic auth or oauth) */
         Hosts hosebirdHosts = new HttpHosts(Constants.STREAM_HOST);
         StatusesFilterEndpoint hosebirdEndpoint = new StatusesFilterEndpoint();
-        List<String> terms = Lists.newArrayList("kafka");
+        List<String> terms = Lists.newArrayList("kafka","lockdown","covid19","love");
         hosebirdEndpoint.trackTerms(terms);
 
         // These secrets should be read from a config file
@@ -117,6 +119,11 @@ public class TwitterProducer {
         properties.setProperty(ProducerConfig.ACKS_CONFIG,"all");
         properties.setProperty(ProducerConfig.RETRIES_CONFIG,Integer.toString(Integer.MAX_VALUE));
         properties.setProperty(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, "5");
+
+        //high throughput
+        properties.setProperty(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
+        properties.setProperty(ProducerConfig.LINGER_MS_CONFIG, "20");
+        properties.setProperty(ProducerConfig.BATCH_SIZE_CONFIG, Integer.toString(32*1024)); // 32KB
 
         KafkaProducer<String, String> producer = new KafkaProducer<String, String>(properties);
         return producer;
