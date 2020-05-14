@@ -5,6 +5,11 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -16,9 +21,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.Properties;
 
 public class ElasticSearchConsumer {
-    public static RestHighLevelClient createElasticSearchClient() {
+    private static RestHighLevelClient createElasticSearchClient() {
 
         String hostname = "";
         String username = "";
@@ -35,22 +43,40 @@ public class ElasticSearchConsumer {
         return new RestHighLevelClient(restClientBuilder);
     }
 
-    public static void main(String[] args) throws IOException {
+    private static KafkaConsumer<String, String> createKafkaConsumer() {
+        Properties properties = new Properties();
+        properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092");
+        properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "Kafka-ElasticSearch-App");
+        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+
+        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(properties);
+        consumer.subscribe(Collections.singleton("twitter"));
+        return consumer;
+    }
+
+    @SuppressWarnings("deprecation")
+    public static void main(String[] args) throws IOException, InterruptedException {
 
         Logger logger = LoggerFactory.getLogger(ElasticSearchConsumer.class);
-
         RestHighLevelClient client = createElasticSearchClient();
 
-        String jsonString = "{\"foo\": \"bar\"}";
+        KafkaConsumer<String, String> consumer = createKafkaConsumer();
 
-        IndexRequest indexRequest = new IndexRequest("twitter", "tweets")
-                .source(jsonString, XContentType.JSON);
+        while (true) {
+            ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
 
-        IndexResponse indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
-        String id = indexResponse.getId();
-        logger.info(id);
+            for (ConsumerRecord record : records) {
 
-        client.close();
+                IndexRequest indexRequest = new IndexRequest("twitter", "tweets")
+                        .source(record.value().toString(), XContentType.JSON);
+                IndexResponse indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
+                String id = indexResponse.getId();
+                logger.info(id);
 
+                Thread.sleep(1000);
+            }
+        }
     }
 }
