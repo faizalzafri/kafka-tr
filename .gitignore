@@ -20,6 +20,7 @@
 /target
 /kafka-basic/target
 /kafka-app/target
+/kafka-consumer/target
 
 ### NetBeans ###
 /nbproject/private/

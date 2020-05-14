@@ -11,6 +11,7 @@
     <modules>
         <module>kafka-basic</module>
         <module>kafka-app</module>
+        <module>kafka-consumer</module>
     </modules>
 
     <properties>
