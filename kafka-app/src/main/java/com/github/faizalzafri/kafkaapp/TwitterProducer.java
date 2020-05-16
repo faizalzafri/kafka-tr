@@ -70,7 +70,7 @@ public class TwitterProducer {
                 hosebirdClient.stop();
             }
             if (msg != null) {
-                producer.send(new ProducerRecord<>("twitter_tweets", msg), new Callback() {
+                producer.send(new ProducerRecord<>("twitter", msg), new Callback() {
                     @Override
                     public void onCompletion(RecordMetadata recordMetadata, Exception e) {
                         if (Objects.nonNull(e)) {
@@ -91,7 +91,7 @@ public class TwitterProducer {
         /** Declare the host you want to connect to, the endpoint, and authentication (basic auth or oauth) */
         Hosts hosebirdHosts = new HttpHosts(Constants.STREAM_HOST);
         StatusesFilterEndpoint hosebirdEndpoint = new StatusesFilterEndpoint();
-        List<String> terms = Lists.newArrayList("kafka","lockdown","covid19","love");
+        List<String> terms = Lists.newArrayList("");
         hosebirdEndpoint.trackTerms(terms);
 
         // These secrets should be read from a config file

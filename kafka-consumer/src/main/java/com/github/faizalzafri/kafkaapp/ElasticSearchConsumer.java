@@ -1,5 +1,6 @@
 package com.github.faizalzafri.kafkaapp;
 
+import com.google.gson.JsonParser;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -26,6 +27,7 @@ import java.util.Collections;
 import java.util.Properties;
 
 public class ElasticSearchConsumer {
+
     private static RestHighLevelClient createElasticSearchClient() {
 
         String hostname = "";
@@ -69,14 +71,28 @@ public class ElasticSearchConsumer {
 
             for (ConsumerRecord record : records) {
 
-                IndexRequest indexRequest = new IndexRequest("twitter", "tweets")
+                // to make consumer idempotent, elastic search id should be created
+
+                //String id = record.topic()+"_"+record.partition()+"_"+record.offset();
+
+                String id = extractIdFromTweet(record.value().toString());
+
+                IndexRequest indexRequest = new IndexRequest("twitter", "tweets", id)
                         .source(record.value().toString(), XContentType.JSON);
                 IndexResponse indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
-                String id = indexResponse.getId();
-                logger.info(id);
+                String _id = indexResponse.getId();
+                logger.info(_id);
 
                 Thread.sleep(1000);
             }
         }
+    }
+
+    private static String extractIdFromTweet(String value) {
+        return JsonParser
+                .parseString(value)
+                .getAsJsonObject()
+                .get("id_str")
+                .getAsString();
     }
 }
