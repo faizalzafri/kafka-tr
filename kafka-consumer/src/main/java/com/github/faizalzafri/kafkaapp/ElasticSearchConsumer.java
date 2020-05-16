@@ -52,6 +52,9 @@ public class ElasticSearchConsumer {
         properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "Kafka-ElasticSearch-App");
         properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        //disable auto commit
+        properties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
+        properties.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "5");
 
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(properties);
         consumer.subscribe(Collections.singleton("twitter"));
@@ -59,7 +62,7 @@ public class ElasticSearchConsumer {
     }
 
     @SuppressWarnings("deprecation")
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException{
 
         Logger logger = LoggerFactory.getLogger(ElasticSearchConsumer.class);
         RestHighLevelClient client = createElasticSearchClient();
@@ -69,6 +72,7 @@ public class ElasticSearchConsumer {
         while (true) {
             ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
 
+            logger.info("Received {} records",records.count());
             for (ConsumerRecord record : records) {
 
                 // to make consumer idempotent, elastic search id should be created
@@ -83,7 +87,19 @@ public class ElasticSearchConsumer {
                 String _id = indexResponse.getId();
                 logger.info(_id);
 
-                Thread.sleep(1000);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            logger.info("Committing offset");
+            consumer.commitSync();
+            logger.info("Committed offset");
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
