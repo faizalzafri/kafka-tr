@@ -18,9 +18,7 @@
 *.ipr
 /out/
 /target
-/kafka-basic/target
-/kafka-app/target
-/kafka-consumer/target
+/*/target
 
 ### NetBeans ###
 /nbproject/private/
